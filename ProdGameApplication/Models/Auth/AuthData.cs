@@ -1,0 +1,8 @@
+﻿namespace ProdGameApplication.Models.Auth
+{
+    public class AuthData
+    {
+        public string? Login { get; set; }
+        public string? Password { get; set; }
+    }
+}
