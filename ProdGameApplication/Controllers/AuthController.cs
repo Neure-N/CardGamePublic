@@ -5,6 +5,7 @@ using ProdGameApplication.Contexts;
 using ProdGameApplication.Models.Auth;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Text;
 
 namespace ProdGameApplication.Controllers
 {
@@ -16,6 +17,7 @@ namespace ProdGameApplication.Controllers
         private readonly UserManager<IdentityUser> _userManager;
         private readonly IConfiguration _configuration;
         private readonly GameContext _context;
+        private const int Lifetime = 24;
 
         public AuthController(ILogger<AuthController> logger, GameContext context, UserManager<IdentityUser> userManager, IConfiguration configuration)
         {
@@ -38,7 +40,6 @@ namespace ProdGameApplication.Controllers
             if(user == null)
                 return NotFound();
 
-            //
             var hashedPassword = _userManager.PasswordHasher.HashPassword(user, data.Password);
             var verification = _userManager.PasswordHasher.VerifyHashedPassword(user, hashedPassword, data.Password);
             var roles = await _userManager.GetRolesAsync(user);
@@ -48,6 +49,7 @@ namespace ProdGameApplication.Controllers
                 var claims = new List<Claim>
                 {
                     new Claim(ClaimsIdentity.DefaultRoleClaimType, user.Email),
+                    new Claim(ClaimsIdentity.DefaultNameClaimType, user.UserName)
                 };
 
                 var roleClaims = roles
@@ -56,19 +58,22 @@ namespace ProdGameApplication.Controllers
 
                 claims.AddRange(roleClaims);
 
+                var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_configuration.GetSection("AuthData").GetSection("Key").Value));
+
                 var jwt = new JwtSecurityToken(
-                    issuer: AuthOptions.Issuer,
-                    audience: AuthOptions.Audience,
+                    issuer: _configuration.GetSection("AuthData").GetSection("Issuer").Value,
+                    audience: _configuration.GetSection("AuthData").GetSection("Audience").Value,
                     notBefore: DateTime.UtcNow,
                     claims: claims,
-                    expires: DateTime.UtcNow.Add(TimeSpan.FromHours(AuthOptions.Lifetime)),
-                    signingCredentials: new SigningCredentials(AuthOptions.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256));
+                    expires: DateTime.UtcNow.Add(TimeSpan.FromHours(Lifetime)),
+                    signingCredentials: new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256));
 
                 var encodedJwt = new JwtSecurityTokenHandler()
                     .WriteToken(jwt);
 
                 var response = new
                 {
+                    username = user.UserName,
                     access_token = encodedJwt,
                 };
 
@@ -120,20 +125,10 @@ namespace ProdGameApplication.Controllers
             }
             catch(Exception ex)
             {
-                var data1 = ex.Message;
-                return BadRequest("Произошла ошибка во время создания пользователя.");
+                return BadRequest($"Произошла ошибка во время создания пользователя. {ex.Message}");
             }
-
-            //if (result.Succeeded)
-            //{
-
-            //}
-            //else
-            //{
-
-            //}
         }
-
+        
         /// <summary>
         /// Confirm email of new user.
         /// </summary>

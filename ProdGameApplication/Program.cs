@@ -5,7 +5,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using ProdGameApplication.Contexts;
 using ProdGameApplication.Hubs;
+using ProdGameApplication.Interfaces;
 using ProdGameApplication.Models.Auth;
+using ProdGameApplication.Services;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,11 +36,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
-            ValidIssuer = AuthOptions.Issuer,
+            ValidIssuer = builder.Configuration.GetSection("AuthData").GetSection("Issuer").Value,
             ValidateAudience = true,
-            ValidAudience = AuthOptions.Audience,
+            ValidAudience = builder.Configuration.GetSection("AuthData").GetSection("Audience").Value,
             ValidateLifetime = true,
-            IssuerSigningKey = AuthOptions.GetSymmetricSecurityKey(),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(builder.Configuration.GetSection("AuthData").GetSection("Key").Value)),
             ValidateIssuerSigningKey = true
         };
         options.Events = new JwtBearerEvents
@@ -62,6 +65,8 @@ builder.Services.Configure<AuthMessageSenderOptions>(builder.Configuration);
 builder.Services.AddSignalR();
 
 builder.Services.AddControllers();
+
+builder.Services.AddSingleton<IBalanceable ,CombatQueryService>();
 
 var app = builder.Build();
 

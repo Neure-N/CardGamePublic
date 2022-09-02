@@ -17,16 +17,13 @@ namespace ProdGameApplication.Contexts
 
         public virtual DbSet<Card> Cards { get; set; } = null!;
         public virtual DbSet<CardsToDeck> CardsToDecks { get; set; } = null!;
+        public virtual DbSet<CardsToUser> CardsToUsers { get; set; } = null!;
         public virtual DbSet<Combat> Combats { get; set; } = null!;
         public virtual DbSet<Count> Counts { get; set; } = null!;
         public virtual DbSet<CountCategory> CountCategories { get; set; } = null!;
         public virtual DbSet<Deck> Decks { get; set; } = null!;
         public virtual DbSet<DiceSymbol> DiceSymbols { get; set; } = null!;
         public virtual DbSet<DiceSymbolsToCard> DiceSymbolsToCards { get; set; } = null!;
-        public virtual DbSet<ExtendedUser> ExtendedUsers { get; set; } = null!;
-        public virtual DbSet<Table1> Table1s { get; set; } = null!;
-        public virtual DbSet<Table2> Table2s { get; set; } = null!;
-        public virtual DbSet<TestUser> TestUsers { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -129,44 +126,6 @@ namespace ProdGameApplication.Contexts
                     .HasForeignKey(d => d.DiceSymbolId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("DiceSymbolsToCards_fk");
-            });
-
-            modelBuilder.Entity<ExtendedUser>(entity =>
-            {
-                entity.Property(e => e.About).HasMaxLength(250);
-
-                entity.Property(e => e.FirstName).HasMaxLength(100);
-
-                entity.Property(e => e.Image).HasMaxLength(150);
-
-                entity.Property(e => e.LastName).HasMaxLength(100);
-
-                entity.Property(e => e.UserId).HasMaxLength(450);
-            });
-
-            modelBuilder.Entity<Table1>(entity =>
-            {
-                entity.HasNoKey();
-
-                entity.ToTable("Table1");
-
-                entity.Property(e => e.A).HasColumnName("a");
-            });
-
-            modelBuilder.Entity<Table2>(entity =>
-            {
-                entity.HasNoKey();
-
-                entity.ToTable("Table2");
-
-                entity.Property(e => e.B).HasColumnName("b");
-            });
-
-            modelBuilder.Entity<TestUser>(entity =>
-            {
-                entity.Property(e => e.FirstName).HasMaxLength(50);
-
-                entity.Property(e => e.LastName).HasMaxLength(50);
             });
 
             OnModelCreatingPartial(modelBuilder);

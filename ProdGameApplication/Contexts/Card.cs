@@ -8,6 +8,7 @@ namespace ProdGameApplication.Contexts
         public Card()
         {
             CardsToDecks = new HashSet<CardsToDeck>();
+            CardsToUsers = new HashSet<CardsToUser>();
             DiceSymbolsToCards = new HashSet<DiceSymbolsToCard>();
         }
 
@@ -30,6 +31,7 @@ namespace ProdGameApplication.Contexts
         public string? LoreDescription { get; set; }
 
         public virtual ICollection<CardsToDeck> CardsToDecks { get; set; }
+        public virtual ICollection<CardsToUser> CardsToUsers { get; set; }
         public virtual ICollection<DiceSymbolsToCard> DiceSymbolsToCards { get; set; }
     }
 }
